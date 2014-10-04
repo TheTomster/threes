@@ -1,4 +1,8 @@
 # Threes!
+# Copyright (c) 2014 Tom Wright
+# Distributed under GPLv2, see LICENSE for details.
+# Original by Asher Vollmer and Greg Wohlwend. <http://asherv.com/threes/>
+# Support their work and buy the game!
 
 require 'set'
 
