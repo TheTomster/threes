@@ -4,6 +4,7 @@
 # Original by Asher Vollmer and Greg Wohlwend. <http://asherv.com/threes/>
 # Support their work and buy the game!
 
+require 'io/console'
 require 'set'
 
 # The board holds the pieces in specific locations. It's a 4x4 grid.
