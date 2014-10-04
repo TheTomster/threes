@@ -29,7 +29,6 @@ class Board
   def []=(row, column, value)
     @pieces[index(row, column)] = value
   end
-  private :[]=
 
   def size
     SIZE
@@ -140,11 +139,12 @@ end
 
 # Slides pieces around on the board.
 class Slider
-  attr_reader :lifted
+  attr_reader :lifted, :board, :bag
 
-  def initialize
+  def initialize(board, bag)
     @lifted = Set.new
-    @moved = Set.new
+    @board = board
+    @bag = bag
   end
 
   TURNS = { up: 0, left: 1, down: 2, right: 3 }
@@ -153,7 +153,7 @@ class Slider
   end
   private :turns
 
-  def dest(board, row, column)
+  def dest(row, column)
     board[row - 1, column]
   end
   private :dest
@@ -163,34 +163,62 @@ class Slider
   end
   private :merges?
 
-  def can_lift?(board, row, column)
+  def can_lift?(row, column)
     p = board[row, column]
-    d = dest(board, row, column)
+    d = dest(row, column)
     return false if p.nil?
     d.nil? || merges?(p, d)
   end
   private :can_lift?
 
-  def lift!(board, row, column)
+  def lift!(row, column)
     board.move!(row, column, row - 1, column)
   end
   private :lift!
 
-  def lift_column!(board, column)
+  def lift_column!(column)
     (1...board.size).each do |row|
-      next unless can_lift?(board, row, column)
-      lift!(board, row, column)
-      @lifted << column
+      next unless can_lift?(row, column)
+      lift!(row, column)
+      lifted << column
     end
   end
   private :lift_column!
 
-  def slide!(board, direction)
+  def spawn!
+    return if lifted.empty?
+    spawn_col = lifted.to_a.sample
+    p = bag.first
+    board[board.size - 1, spawn_col] = p
+  end
+
+  def slide!(direction)
     board.rotate_ccw!(turns(direction))
     (0...board.size).each do |column|
-      lift_column!(board, column)
+      lift_column!(column)
     end
+    spawn!
+  ensure
     board.rotate_cw!(turns(direction))
+  end
+
+  def can_move?(direction)
+    board.rotate_ccw!(turns(direction))
+    (0...board.size).each do |column|
+      (1...board.size).each do |row|
+        return true if can_lift?(row, column)
+      end
+    end
+    return false
+  ensure
+    board.rotate_cw!(turns(direction))
+  end
+
+  def no_moves?
+    [:up, :down, :left, :right].each do |direction|
+      return false if can_move?(direction)
+    end
+    return true
   end
 end
 
@@ -314,12 +342,16 @@ class Game
 
   def mainloop
     loop do
-      @screen.update(board)
+      screen.update(board)
+      slider = Slider.new(board, bag)
+      if slider.no_moves?
+        puts 'No valid moves... game over!'
+        break
+      end
       command = Input.next
       puts "command: #{command}"
       break if command == :quit
-      slider = Slider.new
-      slider.slide!(board, command)
+      slider.slide!(command)
     end
   end
 end
