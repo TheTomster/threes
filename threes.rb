@@ -97,12 +97,21 @@ class Bag
   end
   private :fill
 
-  def each
-    return enum_for(:each) unless block_given?
-    loop do
-      fill if @bag.empty?
-      yield @bag.pop
-    end
+  def next
+    ret = peek
+    @bag = @bag.drop(1)
+    ret
+  end
+
+  def take(n)
+    ret = []
+    n.times { ret << self.next }
+    ret
+  end
+
+  def peek
+    fill if @bag.empty?
+    @bag.first
   end
 
   include Enumerable
@@ -189,7 +198,7 @@ class Slider
   def spawn!
     return if lifted.empty?
     spawn_col = lifted.to_a.sample
-    p = bag.first
+    p = bag.next
     board[board.size - 1, spawn_col] = p
   end
 
@@ -229,10 +238,21 @@ class Screen
   BLUE = "\x1B[36m"
   RESET = "\x1B[0m"
 
-  def update(board)
+  def update(board, bag)
     clear
     draw(board)
+    bag_preview(bag)
     welcome
+  end
+
+  def bag_preview(bag)
+    p = bag.peek
+    color = nil
+    color = BLUE if p.value == 1
+    color = RED if p.value == 2
+    v = p.value.to_s
+    v = '+' if p.value > 3
+    puts "Next: #{color}#{v}#{RESET}"
   end
 
   def welcome
@@ -343,10 +363,11 @@ class Game
 
   def mainloop
     loop do
-      screen.update(board)
+      screen.update(board, bag)
       slider = Slider.new(board, bag)
       if slider.no_moves?
-        puts 'No valid moves... game over!'
+        puts "No valid moves... game over!\07"
+        sleep 0.5
         break
       end
       command = Input.next
