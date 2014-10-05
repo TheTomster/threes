@@ -425,7 +425,7 @@ class Game
         game_over
         break
       end
-      handle_input
+      handle_input(slider)
     end
   rescue UserQuit
     show_score
@@ -437,7 +437,7 @@ class Game
     show_score
   end
 
-  def handle_input
+  def handle_input(slider)
     command = Input.next
     fail UserQuit if command == :quit
     slider.slide!(command)

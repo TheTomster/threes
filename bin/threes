@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require 'threes'
+
+g = Game.new
+g.mainloop
