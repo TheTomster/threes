@@ -12,6 +12,7 @@ class Board
   SIZE = 4
   INITIAL = 9
   def initialize(bag)
+    @bag = bag
     @pieces = []
     @pieces += bag.take(INITIAL)
     @pieces += Array.new(SIZE * SIZE - INITIAL)
@@ -44,6 +45,7 @@ class Board
     d = self[dr, dc]
     self[dr, dc] = p.merge(d)
     self[sr, sc] = nil
+    @bag.merged(self[dr, dc].value)
   end
 
   def move!(sr, sc, dr, dc)
@@ -82,7 +84,10 @@ end
 
 # Serves up random pieces.
 class Bag
+  attr_reader :extras, :max
   def initialize
+    @extras = [1, 1, 2, 2, 3, 3].map { |val| Piece.new(val) }
+    @max = 3
     fill
   end
 
@@ -91,7 +96,7 @@ class Bag
       Piece.new(1), Piece.new(1), Piece.new(2), Piece.new(2), Piece.new(3),
       Piece.new(3)
     ]
-    randoms = @bag.dup.shuffle
+    randoms = extras.shuffle
     @bag += randoms.take(3)
     @bag.shuffle!
   end
@@ -112,6 +117,15 @@ class Bag
   def peek
     fill if @bag.empty?
     @bag.first
+  end
+
+  def merged(value)
+    if value > max
+      @max = value
+      if value >= 48
+        @extras << Piece.new(value / 8)
+      end
+    end
   end
 
   include Enumerable
