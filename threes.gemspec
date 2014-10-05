@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'threes'
-  s.version     = '0.1.0'
+  s.version     = '0.1.1'
   s.licenses    = ['GPLv2']
   s.summary     = 'Small commandline Threes! clone.'
   s.authors     = ['Tom Wright']

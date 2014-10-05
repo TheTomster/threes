@@ -444,9 +444,13 @@ EOF
       slider.slide!(command)
     end
 
+    def add_commas(n)
+      n.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
+    end
+
     def show_score
       score = Score.new(board)
-      puts "You scored #{score} points."
+      puts "You scored #{add_commas(score)} points."
     end
   end
 end
