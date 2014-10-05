@@ -256,9 +256,10 @@ end
 
 # The terminal. Updates what the user sees.
 class Screen
-  RED = "\x1B[31m"
-  BLUE = "\x1B[36m"
-  RESET = "\x1B[0m"
+  BOLD = "\e[1m"
+  RED = "\e[31m"
+  BLUE = "\e[36m"
+  RESET = "\e[0m"
 
   def update(board, bag)
     clear
@@ -287,7 +288,7 @@ EOF
   end
 
   def clear
-    print "\x1B[2J\x1B[H"
+    print "\e[2J\e[H"
   end
 
   def center(s)
@@ -298,22 +299,32 @@ EOF
     ' ' * pad << str << ' ' * pad
   end
 
-  def draw_piece(p)
+  def max_value?(board, v)
+    board.each do |p|
+      next if p.nil?
+      return false if p.value > v
+    end
+    return true
+  end
+
+  def draw_piece(board, p)
     if p.nil?
       print center('--')
     else
       print BLUE if p.value == 1
       print RED if p.value == 2
+      print BOLD if max_value?(board, p.value)
       print center(p.value)
-      print RESET
     end
+  ensure
+    print RESET
   end
 
   def draw(board)
     (0...board.size).each do |r|
       (0...board.size).each do |c|
         p = board[r, c]
-        draw_piece(p)
+        draw_piece(board, p)
         print '   '
       end
       print "\n\n"
