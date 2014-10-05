@@ -125,12 +125,9 @@ class Bag
   end
 
   def merged(value)
-    if value > max
-      @max = value
-      if value >= 48
-        @extras << Piece.new(value / 8)
-      end
-    end
+    return if value < max
+    @max = value
+    @extras << Piece.new(value / 8) if value >= 48
   end
 
   include Enumerable
@@ -250,7 +247,7 @@ class Slider
     [:up, :down, :left, :right].each do |direction|
       return false if can_move?(direction)
     end
-    return true
+    true
   end
 end
 
@@ -304,7 +301,7 @@ EOF
       next if p.nil?
       return false if p.value > v
     end
-    return true
+    true
   end
 
   def draw_piece(board, p)
@@ -384,6 +381,7 @@ module Input
   end
 end
 
+# Computes the score of a board.
 class Score
   attr_reader :points
 
@@ -406,6 +404,9 @@ class Score
   end
 end
 
+class UserQuit < Exception
+end
+
 # Main game controller
 class Game
   attr_reader :bag, :board, :screen, :input
@@ -421,15 +422,28 @@ class Game
       screen.update(board, bag)
       slider = Slider.new(board, bag)
       if slider.no_moves?
-        puts "No valid moves... game over!\07"
-        sleep 0.5
+        game_over
         break
       end
-      command = Input.next
-      puts "command: #{command}"
-      break if command == :quit
-      slider.slide!(command)
+      handle_input
     end
+  rescue UserQuit
+    show_score
+  end
+
+  def game_over
+    puts "No valid moves... game over!\07"
+    sleep 0.5
+    show_score
+  end
+
+  def handle_input
+    command = Input.next
+    fail UserQuit if command == :quit
+    slider.slide!(command)
+  end
+
+  def show_score
     score = Score.new(board)
     puts "You scored #{score} points."
   end
