@@ -80,6 +80,11 @@ class Board
     turns.times { rotate_ccw_once! }
     self
   end
+
+  def each(&block)
+    return enum_for(:each) unless block_given?
+    @pieces.each(&block)
+  end
 end
 
 # Serves up random pieces.
@@ -133,6 +138,8 @@ end
 
 # A piece on the game board.
 class Piece
+  MAX_VALUE = 6144
+
   attr_reader :value, :merge_value
 
   def initialize(value)
@@ -149,6 +156,7 @@ class Piece
 
   def merges?(other)
     return true if other.nil?
+    return false if value >= MAX_VALUE
     other.value == merge_value
   end
 
@@ -365,6 +373,28 @@ module Input
   end
 end
 
+class Score
+  attr_reader :points
+
+  def initialize(board)
+    @points = 0
+    board.each do |p|
+      next if p.nil?
+      val = p.value
+      next if val == 1 || val == 2
+      @points += score(val)
+    end
+  end
+
+  def score(value)
+    3**(Math.log2(value / 3) + 1)
+  end
+
+  def to_s
+    @points.to_i.to_s
+  end
+end
+
 # Main game controller
 class Game
   attr_reader :bag, :board, :screen, :input
@@ -389,5 +419,7 @@ class Game
       break if command == :quit
       slider.slide!(command)
     end
+    score = Score.new(board)
+    puts "You scored #{score} points."
   end
 end
