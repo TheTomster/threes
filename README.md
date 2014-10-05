@@ -1,4 +1,4 @@
 threes
 ======
 
-a small threes clone in the terminal
+A small Threes! clone in the terminal.
